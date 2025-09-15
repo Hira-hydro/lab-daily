@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>出退勤管理</title>
+</head>
+<body>
+    <h1>出退勤管理（日誌）</h1>
+
+    {% if record %}
+        <p>出勤: {{ record.clock_in or "未入力" }}</p>
+        <p>退勤: {{ record.clock_out or "未入力" }}</p>
+    {% else %}
+        <p>今日の記録はまだありません</p>
+    {% endif %}
+
+    <form method="POST">
+        <button type="submit" name="action" value="clock_in">出勤</button>
+        <button type="submit" name="action" value="clock_out">退勤</button>
+        <br><br>
+        <textarea name="note" rows="5" cols="40">{{ record.note if record else "" }}</textarea>
+        <br>
+        <button type="submit" name="action" value="save_note">日誌保存</button>
+    </form>
+
+    <p><a href="{{ url_for('records') }}">過去の記録を見る</a></p>
+</body>
+</html>

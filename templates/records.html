@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>記録一覧</title>
+</head>
+<body>
+    <h1>記録一覧</h1>
+    <table border="1">
+        <tr>
+            <th>日付</th>
+            <th>出勤</th>
+            <th>退勤</th>
+            <th>日誌</th>
+        </tr>
+        {% for r in records %}
+        <tr>
+            <td>{{ r.date }}</td>
+            <td>{{ r.clock_in or "" }}</td>
+            <td>{{ r.clock_out or "" }}</td>
+            <td>{{ r.note or "" }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <p><a href="{{ url_for('index') }}">戻る</a></p>
+</body>
+</html>
