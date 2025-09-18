@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, abo
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, User, Record, AccessLog
-from datetime import datetime
+from datetime import datetime,date
 
 # Flaskアプリケーションの設定
 app = Flask(__name__)
@@ -72,6 +72,18 @@ def logout():
     logout_user()
     flash("ログアウトしました","info")
     return redirect(url_for("login"))
+
+# 出勤状況表示
+@app.route("/attendance")
+@login_required
+def attendance():
+    today =date.today()
+    records = Record.query.filter(
+        Record.clock_in != None,
+        Record.clock_out == None
+    ).all()
+
+    return render_template("attendance.html",records=records)
 
 # ダッシュボード
 @app.route("/dashboard")
@@ -169,6 +181,19 @@ def edit_record(record_id):
         return redirect(url_for("records"))
     return render_template("edit_record.html", record=record)
 
+# 記録削除（管理者のみ）
+@app.route("/records/delete/<int:record_id>", methods=["POST"])
+@login_required
+def delete_record(record_id):
+    if current_user.role != "admin":
+        abort(403)
+
+    record =Record.query.get_or_404(record_id)
+    db.session.delete(record)
+    db.session.commit()
+    flash("記録を削除しました","info")
+    return redirect(url_for("records"))
+
 # ユーザー管理（管理者のみ）
 @app.route("/admin/users", methods=["GET", "POST"])
 @login_required
@@ -229,6 +254,7 @@ def view_logs():
     logs = AccessLog.query.order_by(AccessLog.timestamp.desc()).limit(100).all()
     return render_template("logs.html", logs=logs)
 
+# テーマ変更
 @app.route("/settings/theme", methods=["GET","POST"])
 @login_required
 def change_theme():

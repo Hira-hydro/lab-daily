@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>出勤中のメンバー</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ユーザー名</th>
+            <th>出勤時刻</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for record in records %}
+        <tr>
+            <td>{{ record.user.username }}</td>
+            <td>{{ record.clock_in.strftime('%H:%M:%S') }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="2" class="text-center">現在出勤しているメンバーはいません</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
