@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>週間勤務時間 ({{ start }} - {{ end }})</h2>
+
+<div class="mb-3">
+    <a href="{{ url_for('weekly_stats', week_offset=week_offset+1) }}" class="btn btn-outline-secondary">← 前の週</a>
+    {% if week_offset > 0 %}
+        <a href="{{ url_for('weekly_stats', week_offset=week_offset-1) }}" class="btn btn-outline-secondary">次の週 →</a>
+    {% endif %}
+</div>
+
+<canvas id="weeklyChart" height="120"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const usersData = {{ users|tojson | safe }};
+    const ctx = document.getElementById('weeklyChart');
+    const colors = ['rgba(54, 162, 235, 0.7)','rgba(255, 99, 132, 0.7)','rgba(255, 206, 86, 0.7)','rgba(75, 192, 192, 0.7)','rgba(153, 102, 255, 0.7)','rgba(255, 159, 64, 0.7)'];
+
+    const datasets = Object.keys(usersData).map((u, i) => ({
+        label: u,
+        data: usersData[u],
+        backgroundColor: colors[i % colors.length]
+    }));
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ["日", "月", "火", "水", "木", "金", "土"],
+            datasets: datasets
+        },
+        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+    });
+</script>
+{% endblock %}

@@ -2,11 +2,14 @@ from flask import Flask, render_template, request, redirect, url_for, flash, abo
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, User, Record, AccessLog
-from datetime import datetime,date
+from datetime import datetime, date, timedelta
 
 # Flaskアプリケーションの設定
 app = Flask(__name__)
+# 本番用
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///lab-diary.db"
+# 開発用（コメントアウト解除して使用）
+# app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///lab-diary-test.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.secret_key = "your-secret-key"  # 後で安全なキーに置き換える
 
@@ -193,6 +196,32 @@ def delete_record(record_id):
     db.session.commit()
     flash("記録を削除しました","info")
     return redirect(url_for("records"))
+
+# 労働時間統計
+@app.route("/weekly_stats")
+@login_required
+def weekly_stats():
+    week_offset = int(request.args.get("week_offset", 0))
+    today = datetime.utcnow().date()
+    start_of_week = today - timedelta(days=today.weekday() + 1) if today.weekday() != 6 else today
+    start_of_week -= timedelta(days=7*week_offset)
+    end_of_week = start_of_week + timedelta(days=6)
+
+    results = db.session.query(
+        User.username,
+        db.func.strftime("%w", Record.clock_in),
+        db.func.sum(db.func.julianday(Record.clock_out) - db.func.julianday(Record.clock_in)) * 24
+    ).join(Record).filter(
+        Record.clock_in >= start_of_week,
+        Record.clock_in <= end_of_week,
+        Record.clock_out.isnot(None)
+    ).group_by(User.username, db.func.strftime("%w", Record.clock_in)).all()
+
+    users = {u.username: [0]*7 for u in User.query.all()}
+    for username, weekday, hours in results:
+        users[username][int(weekday)] = round(hours or 0, 2)
+
+    return render_template("weekly_stats.html", users=users, start=start_of_week, end=end_of_week, week_offset=week_offset)
 
 # ユーザー管理（管理者のみ）
 @app.route("/admin/users", methods=["GET", "POST"])
