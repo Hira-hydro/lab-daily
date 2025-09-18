@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>ようこそ {{ user.username }} さん！</h2>
+
+    <form action="{{ url_for('clock_in') }}" method="post" class="mb-2">
+        <button type="submit" class="btn btn-success">出勤</button>
+    </form>
+
+    <form action="{{ url_for('clock_out') }}" method="post" class="mb-2">
+        <button type="submit" class="btn btn-danger">退勤</button>
+    </form>
+
+    {% if record %}
+        <p><strong>今日の出勤:</strong> {{ record.clock_in }}</p>
+        <p><strong>今日の退勤:</strong> {{ record.clock_out }}</p>
+
+        <form action="{{ url_for('save_note') }}" method="post">
+            <div class="mb-3">
+                <label class="form-label">日誌</label>
+                <textarea name="note" class="form-control" rows="5">{{ record.note or "" }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">保存</button>
+        </form>
+    {% else %}
+        <p>今日はまだ記録がありません。</p>
+    {% endif %}
+{% endblock %}

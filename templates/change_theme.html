@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>テーマ設定</h2>
+
+<form method="POST">
+    <div class="mb-3">
+        <label for="theme" class="form-label">テーマカラーを選択</label>
+        <select name="theme" id="theme" class="form-select">
+            <option value="light" {% if user.theme == "light" %}selected{% endif %}>ライト</option>
+            <option value="dark" {% if user.theme == "dark" %}selected{% endif %}>ダーク</option>
+            <option value="blue" {% if user.theme == "blue" %}selected{% endif %}>ブルー</option>
+            <option value="green" {% if user.theme == "green" %}selected{% endif %}>グリーン</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">保存</button>
+</form>
+{% endblock %}
